@@ -26,6 +26,10 @@ Inspiration is novel information generated from a state transition in beliefs in
 
 Beliefs are physical structures in a person and come in many different physical forms. The words "belief", "true", "false", "meaningless", and "belief spectrum" here are abstractions that encompass those structures so we can reason about things in this space - we can't express beliefs in words perfectly, but we can get close enough to make use of *all this*. This mental model is a specific kind of ontology. It's purpose is to model a state machine close to how brains work with respect to beliefs, so that we can model and operate on brains through computation on the state machine.
 
+When extracting and representing the beliefs, those representations will trend towards the beliefs of the model used to extract/change the beliefs. Any system that operates on beliefs should support different models, so a user can choose the "universe" of belief systems they want operating on them.
+
+Generally, beliefs trend towards becoming more false/meaningless over time, to reflect reality. There are two ways to create a new belief or make a belief more true. The first is simulation - you have to simulate the behaviour that assumes the belief to be true. The more the behaviour is simulated and the less the belief is brought into your awareness, the more the belief will become more "true" in your brain. The second is inspiration - you need to have an experience that is unexplainable using your current beliefs and fill that unknown with a new belief (you have to be confused to be inspired).
+
 ---
 
 Here are the kinds of things we eventually want to build for our system:
@@ -141,3 +145,5 @@ As a first step, let's make the system work locally.
 ---
 
 Now let's make the system work in the cloud.
+
+---

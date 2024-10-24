@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "belief_state_machine"
+version = "0.1.0"
+description = "belief state machine"
+authors = ["Douglas"]
+
+[tool.poetry.dependencies]
+python = ">=3.12,<=3.13"
+crewai = { extras = ["tools"], version = ">=0.75" }
+crewai-tools = ">=0.13"
+django = ">=5.1"
+djangorestframework = ">=3.15.1"
+django-cors-headers = ">=4.5.0"
+
+[tool.poetry.scripts]
+system_1 = "system_1.main:run"
+train = "system_1.main:train"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
