@@ -39,7 +39,9 @@ jobs:
 
       - name: Install poetry dependencies
         working-directory: backend
-        run: poetry install
+        run: |
+          curl -sSL https://install.python-poetry.org | python -
+          poetry install
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
