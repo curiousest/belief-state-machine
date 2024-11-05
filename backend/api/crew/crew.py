@@ -150,7 +150,7 @@ class WriteParableCrew:
     def write_parable_task(self):
         return Task(
             description=self.tasks_config["write_parable"]["description"].format(text=self.text, context=self.context, belief=self.belief, action=self.action),
-            expected_output=self.tasks_config["write_parable"]["expected_output"],
+            expected_output=self.tasks_config["write_parable"]["expected_output"].format(action=self.action),
             agent=self.writer()
         )
     

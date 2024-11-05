@@ -41,7 +41,7 @@ next_order_beliefs:
 write_parable:
   description: >
     The following belief was derived from the text: {belief}
-    Tell a parable that challenges the belief to be meaningless.
+    Tell a parable where the moral of the story is to operate on the belief to be {action}.
     In the parable, make use of the characters, entities, events, setting, tone, and style of the text / context below.
 
     ### Text:
@@ -50,4 +50,4 @@ write_parable:
     {context}
 
   expected_output: >
-    A parable that challenges the target belief to be meaningless.
+    A parable that operates on the target belief to be {action}.

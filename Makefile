@@ -25,6 +25,14 @@ run-frontend:
 run-all:
 	make -j2 run-backend run-frontend
 
+.PHONY: scale-up
+scale-up:
+	./scripts/scale_up.sh
+
+.PHONY: scale-down
+scale-down:
+	./scripts/scale_down.sh
+
 # Setup commands
 .PHONY: setup
 setup:

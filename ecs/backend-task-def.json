@@ -1,0 +1,32 @@
+{
+    "family": "backend-task",
+    "networkMode": "awsvpc",
+    "executionRoleArn": "arn:aws:iam::YOUR_AWS_ACCOUNT_ID:role/ecsTaskExecutionRole",
+    "containerDefinitions": [
+      {
+        "name": "backend",
+        "image": "REPOSITORY_URI",
+        "essential": true,
+        "portMappings": [
+          {
+            "containerPort": 8000,
+            "protocol": "tcp"
+          }
+        ],
+        "environment": [
+          {
+            "name": "OPENAI_API_KEY",
+            "value": "YOUR_OPENAI_API_KEY"
+          },
+          {
+            "name": "CREWAI_API_KEY",
+            "value": "YOUR_CREWAI_API_KEY"
+          }
+        ]
+      }
+    ],
+    "requiresCompatibilities": ["FARGATE"],
+    "cpu": "256",
+    "memory": "512"
+  }
+  

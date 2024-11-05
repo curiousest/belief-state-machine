@@ -28,6 +28,10 @@ class ExtractBeliefsWriteParableCrew:
     agents_config: str = 'config/agents.yaml'
     tasks_config: str = 'config/tasks.yaml'
 
+    def __init__(self, text: str, context: str):
+        self.text = text
+        self.context = context
+
     @agent
     def extractor(self):
         return Agent(
@@ -47,7 +51,7 @@ class ExtractBeliefsWriteParableCrew:
     @task
     def first_order_beliefs_task(self):
         return Task(
-            description=self.tasks_config["first_order_beliefs"]["description"].format(text=text, context=context),
+            description=self.tasks_config["first_order_beliefs"]["description"].format(text=self.text, context=self.context),
             expected_output=self.tasks_config["first_order_beliefs"]["expected_output"],
             output_json=BeliefLayer,
             agent=self.extractor()
@@ -56,7 +60,7 @@ class ExtractBeliefsWriteParableCrew:
     @task
     def next_order_beliefs_task_1(self):
         return Task(
-            description=self.tasks_config["next_order_beliefs"]["description"].format(text=text, context=context),
+            description=self.tasks_config["next_order_beliefs"]["description"].format(text=self.text, context=self. context),
             context=[self.first_order_beliefs_task()],
             expected_output=self.tasks_config["next_order_beliefs"]["expected_output"],
             output_json=BeliefLayer,
@@ -66,7 +70,7 @@ class ExtractBeliefsWriteParableCrew:
     @task
     def next_order_beliefs_task_2(self):
         return Task(
-            description=self.tasks_config["next_order_beliefs"]["description"].format(text=text, context=context),
+            description=self.tasks_config["next_order_beliefs"]["description"].format(text=self.text, context=self.context),
             context=[self.first_order_beliefs_task(), self.next_order_beliefs_task_1()],
             expected_output=self.tasks_config["next_order_beliefs"]["expected_output"],
             output_json=BeliefLayer,
@@ -92,10 +96,12 @@ class WriteParableCrew:
     agents_config: str = 'config/agents.yaml'
     tasks_config: str = 'config/tasks.yaml'
 
-    def __init__(self, text: str, context: str, belief: str):
+    def __init__(self, text: str, context: str, belief: str, action: str):
         self.text = text 
         self.context = context
         self.belief = belief
+        assert action in ["reinforced", "changed", "meaningless"]
+        self.action = action
 
     
     @agent
@@ -109,8 +115,8 @@ class WriteParableCrew:
     @task
     def write_parable_task(self):
         return Task(
-            description=self.tasks_config["write_parable"]["description"].format(text=text, context=context, belief=self.belief),
-            expected_output=self.tasks_config["write_parable"]["expected_output"],
+            description=self.tasks_config["write_parable"]["description"].format(text=self.text, context=self.context, belief=self.belief, action=self.action),
+            expected_output=self.tasks_config["write_parable"]["expected_output"].format(action=self.action),
             agent=self.writer()
         )
     

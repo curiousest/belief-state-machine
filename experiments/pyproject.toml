@@ -8,6 +8,8 @@ authors = ["Your Name <you@example.com>"]
 python = ">=3.12,<=3.13"
 crewai = { extras = ["tools"], version = ">=0.75" }
 crewai-tools = ">=0.13"
+jupyterlab = "^4.2.5"
+weave = "^0.51.17"
 
 [tool.poetry.scripts]
 system_1 = "system_1.main:run"

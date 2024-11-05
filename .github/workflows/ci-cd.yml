@@ -19,15 +19,19 @@ jobs:
         with:
           python-version: '3.9'
 
+      - name: Install Poetry
+        run: |
+          curl -sSL https://install.python-poetry.org | python -
+
       - name: Install Backend Dependencies
         run: |
           cd backend
-          pip install -r requirements.txt
+          poetry install
 
       - name: Run Backend Tests
         run: |
           cd backend
-          python manage.py test
+          poetry run python manage.py test
 
       - name: Set up Node
         uses: actions/setup-node@v2
@@ -43,3 +47,56 @@ jobs:
         run: |
           cd frontend
           npm test -- --watchAll=false
+
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+
+      - name: Terraform Init
+        working-directory: ./terraform
+        run: terraform init
+
+      - name: Terraform Apply
+        working-directory: ./terraform
+        env:
+          TF_VAR_openai_api_key: ${{ secrets.OPENAI_API_KEY }}
+          TF_VAR_crewai_api_key: ${{ secrets.CREWAI_API_KEY }}
+        run: terraform apply -auto-approve
+
+      # Build and push Docker images to ECR
+      - name: Log in to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Build, tag, and push frontend image to ECR
+        run: |
+          docker build -t ${{ steps.frontend_image.outputs.image }} ./frontend
+          docker push ${{ steps.frontend_image.outputs.image }}
+        env:
+          ECR_REPOSITORY: ${{ terraform output -raw frontend_ecr_repository_url }}
+
+      - name: Build, tag, and push backend image to ECR
+        run: |
+          docker build -t ${{ steps.backend_image.outputs.image }} ./backend
+          docker push ${{ steps.backend_image.outputs.image }}
+        env:
+          ECR_REPOSITORY: ${{ terraform output -raw backend_ecr_repository_url }}
+
+      # Update ECS services to use the new images
+      - name: Update ECS services
+        run: |
+          aws ecs update-service --cluster ${{ terraform output -raw ecs_cluster_name }} --service ${{ terraform output -raw frontend_service_name }} --force-new-deployment
+          aws ecs update-service --cluster ${{ terraform output -raw ecs_cluster_name }} --service ${{ terraform output -raw backend_service_name }} --force-new-deployment
