@@ -8,47 +8,66 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
+    outputs:
+      backend_image: ${{ steps.build_backend.outputs.image }}
+      frontend_image: ${{ steps.build_frontend.outputs.image }}
+    
     steps:
       - uses: actions/checkout@v2
 
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.9'
+      - name: Log in to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
 
-      - name: Install Poetry
+      - name: Build and Push Backend Docker Image
+        id: build_backend
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: ${{ secrets.BACKEND_ECR_REPOSITORY }}
+          IMAGE_TAG: ${{ github.sha }}
         run: |
-          curl -sSL https://install.python-poetry.org | python -
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG backend
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
 
-      - name: Install Backend Dependencies
+      - name: Build and Push Frontend Docker Image
+        id: build_frontend
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: ${{ secrets.FRONTEND_ECR_REPOSITORY }}
+          IMAGE_TAG: ${{ github.sha }}
         run: |
-          cd backend
-          poetry install
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG frontend
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
 
-      - name: Run Backend Tests
+  test-frontend:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Log in to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+          
+      - name: Run frontend tests
         run: |
-          cd backend
-          poetry run python manage.py test
+          docker run --rm ${{ needs.build.outputs.frontend_image }} npm test
 
-      - name: Set up Node
-        uses: actions/setup-node@v2
-        with:
-          node-version: '14'
-
-      - name: Install Frontend Dependencies
+  test-backend:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Log in to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+          
+      - name: Run backend tests
         run: |
-          cd frontend
-          npm install
-
-      - name: Run Frontend Tests
-        run: |
-          cd frontend
-          npm test -- --watchAll=false
+          docker run --rm ${{ needs.build.outputs.backend_image }} python manage.py test
 
   deploy:
+    needs: [test-frontend, test-backend]
     runs-on: ubuntu-latest
 
     steps:
@@ -86,17 +105,28 @@ jobs:
           docker build -t ${{ steps.frontend_image.outputs.image }} ./frontend
           docker push ${{ steps.frontend_image.outputs.image }}
         env:
-          ECR_REPOSITORY: ${{ terraform output -raw frontend_ecr_repository_url }}
+          ECR_REPOSITORY: ${{ steps.terraform-output.outputs.frontend_ecr_repository_url }}
 
       - name: Build, tag, and push backend image to ECR
         run: |
           docker build -t ${{ steps.backend_image.outputs.image }} ./backend
           docker push ${{ steps.backend_image.outputs.image }}
         env:
-          ECR_REPOSITORY: ${{ terraform output -raw backend_ecr_repository_url }}
+          ECR_REPOSITORY: ${{ steps.terraform-output.outputs.backend_ecr_repository_url }}
 
-      # Update ECS services to use the new images
+      # Add a step to capture terraform outputs
+      - name: Get Terraform outputs
+        id: terraform-output
+        working-directory: ./terraform
+        run: |
+          echo "frontend_ecr_repository_url=$(terraform output -raw frontend_ecr_repository_url)" >> $GITHUB_OUTPUT
+          echo "backend_ecr_repository_url=$(terraform output -raw backend_ecr_repository_url)" >> $GITHUB_OUTPUT
+          echo "ecs_cluster_name=$(terraform output -raw ecs_cluster_name)" >> $GITHUB_OUTPUT
+          echo "frontend_service_name=$(terraform output -raw frontend_service_name)" >> $GITHUB_OUTPUT
+          echo "backend_service_name=$(terraform output -raw backend_service_name)" >> $GITHUB_OUTPUT
+
+      # Update ECS services using the captured outputs
       - name: Update ECS services
         run: |
-          aws ecs update-service --cluster ${{ terraform output -raw ecs_cluster_name }} --service ${{ terraform output -raw frontend_service_name }} --force-new-deployment
-          aws ecs update-service --cluster ${{ terraform output -raw ecs_cluster_name }} --service ${{ terraform output -raw backend_service_name }} --force-new-deployment
+          aws ecs update-service --cluster ${{ steps.terraform-output.outputs.ecs_cluster_name }} --service ${{ steps.terraform-output.outputs.frontend_service_name }} --force-new-deployment
+          aws ecs update-service --cluster ${{ steps.terraform-output.outputs.ecs_cluster_name }} --service ${{ steps.terraform-output.outputs.backend_service_name }} --force-new-deployment
