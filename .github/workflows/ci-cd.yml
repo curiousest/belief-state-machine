@@ -57,6 +57,7 @@ jobs:
           
       - name: Run frontend tests
         run: |
+          echo "${{ needs.build.outputs.frontend_image }}"
           docker run --rm ${{ needs.build.outputs.frontend_image }} npm test
 
   test-backend:
