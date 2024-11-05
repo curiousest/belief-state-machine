@@ -17,37 +17,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Cache npm dependencies
-        uses: actions/cache@v3
-        with:
-          path: frontend/node_modules
-          key: ${{ runner.os }}-node-${{ hashFiles('frontend/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-
-      - name: Install npm dependencies
-        working-directory: frontend
-        run: npm install
-
-      - name: Cache poetry dependencies
-        uses: actions/cache@v3
-        with:
-          path: ~/.cache/pypoetry
-          key: ${{ runner.os }}-poetry-${{ hashFiles('backend/poetry.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-poetry-
-
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.12'
-
-      - name: Install poetry dependencies
-        working-directory: backend
-        run: |
-          curl -sSL https://install.python-poetry.org | python -
-          poetry install
-
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
@@ -66,7 +35,7 @@ jobs:
           ECR_REPOSITORY: ${{ secrets.BACKEND_ECR_REPOSITORY }}
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG backend
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -f backend/Dockerfile .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           echo "backend_image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
 
@@ -105,15 +74,6 @@ jobs:
     environment: prod
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
@@ -133,20 +93,6 @@ jobs:
       - name: Log in to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
-
-      - name: Build, tag, and push frontend image to ECR
-        run: |
-          docker build -t ${{ steps.frontend_image.outputs.image }} ./frontend
-          docker push ${{ steps.frontend_image.outputs.image }}
-        env:
-          ECR_REPOSITORY: ${{ steps.terraform-output.outputs.frontend_ecr_repository_url }}
-
-      - name: Build, tag, and push backend image to ECR
-        run: |
-          docker build -t ${{ steps.backend_image.outputs.image }} ./backend
-          docker push ${{ steps.backend_image.outputs.image }}
-        env:
-          ECR_REPOSITORY: ${{ steps.terraform-output.outputs.backend_ecr_repository_url }}
 
       # Add a step to capture terraform outputs
       - name: Get Terraform outputs

@@ -1,18 +1,21 @@
 # backend/Dockerfile
-FROM python:3.12-slim
+FROM python:3.12
 
-# Install build-essential for C++ compiler support
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
-    && rm -rf /var/lib/apt/lists/*
-
+# Set the working directory in the container
 WORKDIR /app
 
-COPY pyproject.toml .
+# Copy the poetry configuration files
+COPY backend/pyproject.toml backend/poetry.lock ./
 
-RUN pip install --no-cache-dir poetry
-RUN poetry install
+# Install Poetry
+RUN curl -sSL https://install.python-poetry.org | python - && \
+    # Add poetry to PATH
+    export PATH="/root/.local/bin:$PATH" && \
+    # Install dependencies
+    poetry install --no-root
 
-COPY . .
+# Copy the rest of the application code
+COPY backend/ .
 
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+# Command to run the application
+CMD ["python", "manage.py", "runserver"]
