@@ -28,38 +28,36 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
-      - name: Build and Push Backend Docker Image
+      - name: Build Backend Docker Image
         id: build_backend
         run: |
-          docker build -t ${{ steps.login-ecr.outputs.registry }}/${{ secrets.BACKEND_ECR_REPOSITORY }}:${{ github.sha }} -f backend/Dockerfile .
-          docker push ${{ steps.login-ecr.outputs.registry }}/${{ secrets.BACKEND_ECR_REPOSITORY }}:${{ github.sha }}
-
-      - name: Build and Push Frontend Docker Image
-        id: build_frontend
-        run: |
-          docker build -t ${{ steps.login-ecr.outputs.registry }}/${{ secrets.FRONTEND_ECR_REPOSITORY }}:${{ github.sha }} frontend
-          docker push ${{ steps.login-ecr.outputs.registry }}/${{ secrets.FRONTEND_ECR_REPOSITORY }}:${{ github.sha }}
-
-  test-frontend:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-          
-      - name: Run frontend tests
-        run: 
-          docker run --rm ${{ steps.login-ecr.outputs.registry }}/${{ secrets.FRONTEND_ECR_REPOSITORY }}:${{ github.sha }} npm test
-
-  test-backend:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-          
+          BACKEND_IMAGE=${{ steps.login-ecr.outputs.registry }}/${{ secrets.BACKEND_ECR_REPOSITORY }}:${{ github.sha }}
+          docker build -t $BACKEND_IMAGE -f backend/Dockerfile .
+      
       - name: Run backend tests
         run: |
-          docker run --rm ${{ steps.login-ecr.outputs.registry }}/${{ secrets.BACKEND_ECR_REPOSITORY }}:${{ github.sha }} python manage.py test
+          docker run --rm $BACKEND_IMAGE python manage.py test
+      
+      - name: Build Frontend Docker Image
+        id: build_frontend
+        run: |
+          FRONTEND_IMAGE=${{ steps.login-ecr.outputs.registry }}/${{ secrets.FRONTEND_ECR_REPOSITORY }}:${{ github.sha }}
+          docker build -t $FRONTEND_IMAGE -f frontend/Dockerfile .
+
+      - name: Run frontend tests
+        run: 
+          docker run --rm $FRONTEND_IMAGE npm test
+
+      - name: Push Backend Docker Image
+        run: |
+          docker push $BACKEND_IMAGE
+
+      - name: Push Frontend Docker Image
+        run: |
+          docker push $FRONTEND_IMAGE
 
   deploy:
-    needs: [test-frontend, test-backend]
+    needs: [build]
     runs-on: ubuntu-latest
     environment: prod
 
