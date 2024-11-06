@@ -1,4 +1,8 @@
-debug why the parables suck
+## develop an eval pipeline
+
+https://github.com/openai/evals
+
+## debug why the parables suck
 1. Try other files/context to see if it's the input
 2. Compare against manual text entry to see if it's the api/model
 3. Compare different models for parable generation to see if it's the model
