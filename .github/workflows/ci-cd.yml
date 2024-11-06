@@ -30,25 +30,15 @@ jobs:
 
       - name: Build and Push Backend Docker Image
         id: build_backend
-        env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: ${{ secrets.BACKEND_ECR_REPOSITORY }}
-          IMAGE_TAG: ${{ github.sha }}
         run: |
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -f backend/Dockerfile .
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          echo "backend_image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> "$GITHUB_OUTPUT"
+          docker build -t ${{ steps.login-ecr.outputs.registry }}/${{ secrets.BACKEND_ECR_REPOSITORY }}:${{ github.sha }} -f backend/Dockerfile .
+          docker push ${{ steps.login-ecr.outputs.registry }}/${{ secrets.BACKEND_ECR_REPOSITORY }}:${{ github.sha }}
 
       - name: Build and Push Frontend Docker Image
         id: build_frontend
-        env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: ${{ secrets.FRONTEND_ECR_REPOSITORY }}
-          IMAGE_TAG: ${{ github.sha }}
         run: |
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG frontend
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          echo "frontend_image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> "$GITHUB_OUTPUT"
+          docker build -t ${{ steps.login-ecr.outputs.registry }}/${{ secrets.FRONTEND_ECR_REPOSITORY }}:${{ github.sha }} frontend/Dockerfile .
+          docker push ${{ steps.login-ecr.outputs.registry }}/${{ secrets.FRONTEND_ECR_REPOSITORY }}:${{ github.sha }}
 
   test-frontend:
     needs: build
@@ -56,9 +46,8 @@ jobs:
     steps:
           
       - name: Run frontend tests
-        run: |
-          echo "${{ needs.build.outputs.frontend_image }}"
-          docker run --rm ${{ needs.build.outputs.frontend_image }} npm test
+        run: 
+          docker run --rm ${{ steps.login-ecr.outputs.registry }}/${{ secrets.FRONTEND_ECR_REPOSITORY }}:${{ github.sha }} npm test
 
   test-backend:
     needs: build
@@ -67,7 +56,7 @@ jobs:
           
       - name: Run backend tests
         run: |
-          docker run --rm ${{ needs.build.outputs.backend_image }} python manage.py test
+          docker run --rm ${{ steps.login-ecr.outputs.registry }}/${{ secrets.BACKEND_ECR_REPOSITORY }}:${{ github.sha }} python manage.py test
 
   deploy:
     needs: [test-frontend, test-backend]
