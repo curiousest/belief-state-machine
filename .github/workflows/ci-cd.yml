@@ -37,7 +37,7 @@ jobs:
       - name: Build and Push Frontend Docker Image
         id: build_frontend
         run: |
-          docker build -t ${{ steps.login-ecr.outputs.registry }}/${{ secrets.FRONTEND_ECR_REPOSITORY }}:${{ github.sha }} frontend/Dockerfile .
+          docker build -t ${{ steps.login-ecr.outputs.registry }}/${{ secrets.FRONTEND_ECR_REPOSITORY }}:${{ github.sha }} -f frontend/Dockerfile .
           docker push ${{ steps.login-ecr.outputs.registry }}/${{ secrets.FRONTEND_ECR_REPOSITORY }}:${{ github.sha }}
 
   test-frontend:
