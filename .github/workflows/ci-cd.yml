@@ -32,31 +32,33 @@ jobs:
         id: build_backend
         run: |
           BACKEND_IMAGE=${{ steps.login-ecr.outputs.registry }}/${{ secrets.BACKEND_ECR_REPOSITORY }}:${{ github.sha }}
+          echo "BACKEND_IMAGE=$BACKEND_IMAGE" >> $GITHUB_ENV
           cd backend
           docker build -t $BACKEND_IMAGE .
-      
+
       - name: Run backend tests
         run: |
-          docker run --rm $BACKEND_IMAGE uv run python manage.py test
+          docker run --rm ${{ env.BACKEND_IMAGE }} uv run python manage.py test
       
       - name: Build Frontend Docker Image
         id: build_frontend
         run: |
           FRONTEND_IMAGE=${{ steps.login-ecr.outputs.registry }}/${{ secrets.FRONTEND_ECR_REPOSITORY }}:${{ github.sha }}
+          echo "FRONTEND_IMAGE=$FRONTEND_IMAGE" >> $GITHUB_ENV
           cd frontend
           docker build -t $FRONTEND_IMAGE .
 
       - name: Run frontend tests
-        run: 
-          docker run --rm $FRONTEND_IMAGE npm test
+        run: |
+          docker run --rm ${{ env.FRONTEND_IMAGE }} npm test
 
       - name: Push Backend Docker Image
         run: |
-          docker push $BACKEND_IMAGE
+          docker push ${{ env.BACKEND_IMAGE }}
 
       - name: Push Frontend Docker Image
         run: |
-          docker push $FRONTEND_IMAGE
+          docker push ${{ env.FRONTEND_IMAGE }}
 
   deploy:
     needs: [build]
