@@ -50,7 +50,7 @@ jobs:
 
       - name: Run frontend tests
         run: |
-          docker run --rm ${{ env.FRONTEND_IMAGE }} npm test
+          docker run --rm ${{ env.FRONTEND_IMAGE }} npm test -- --watchAll=false
 
       - name: Push Backend Docker Image
         run: |
