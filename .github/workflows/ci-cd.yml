@@ -42,7 +42,7 @@ jobs:
         id: build_frontend
         run: |
           FRONTEND_IMAGE=${{ steps.login-ecr.outputs.registry }}/${{ secrets.FRONTEND_ECR_REPOSITORY }}:${{ github.sha }}
-          docker build -t $FRONTEND_IMAGE -f frontend/Dockerfile .
+          docker build -t $FRONTEND_IMAGE -f frontend
 
       - name: Run frontend tests
         run: 
