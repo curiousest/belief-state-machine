@@ -1,21 +1,16 @@
-# backend/Dockerfile
-FROM python:3.12
+FROM python:3.13-slim
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
-# Set the working directory in the container
+# Install build-essential for C++11 support
+#RUN apt-get update && apt-get install -y \
+#    python3-dev \
+#    build-essential
+
+# Copy the project into the image
+ADD . /app
+
+# Sync the project into a new environment, using the frozen lockfile
 WORKDIR /app
+RUN uv sync --frozen
 
-# Copy the poetry configuration files
-COPY backend/pyproject.toml backend/poetry.lock ./
-
-# Install Poetry
-RUN curl -sSL https://install.python-poetry.org | python - && \
-    # Add poetry to PATH
-    export PATH="/root/.local/bin:$PATH" && \
-    # Install dependencies
-    poetry install --no-root
-
-# Copy the rest of the application code
-COPY backend/ .
-
-# Command to run the application
-CMD ["python", "manage.py", "runserver"]
+CMD ["uv", "run", "python", "manage.py", "runserver", "0.0.0.0:8000"]
