@@ -1,6 +1,6 @@
 // frontend/src/App.js
 import React, { useState } from 'react';
-import axios from 'axios';
+const axios = require('axios/dist/browser/axios.cjs');
 
 function App() {
   const [text, setText] = useState('');
