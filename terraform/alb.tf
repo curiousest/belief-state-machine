@@ -27,6 +27,7 @@ resource "aws_lb_target_group" "frontend" {
   port     = var.frontend_port
   protocol = "HTTP"
   vpc_id   = aws_vpc.main.id
+  target_type = "ip"
 
   health_check {
     path                = "/"
@@ -47,7 +48,7 @@ resource "aws_lb_target_group" "backend" {
   port     = var.backend_port
   protocol = "HTTP"
   vpc_id   = aws_vpc.main.id
-
+  target_type = "ip"
   health_check {
     path                = "/health"
     matcher             = "200-399"
