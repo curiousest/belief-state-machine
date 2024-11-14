@@ -62,3 +62,19 @@ resource "aws_lb_target_group" "backend" {
     Name = "${var.project_name}-backend-tg"
   }
 }
+
+resource "aws_lb_listener_rule" "backend" {
+  listener_arn = aws_lb_listener.http.arn
+  priority     = 100
+
+  conditions {
+    path_pattern {
+      values = ["/backend/*"]
+    }
+  }
+
+  actions {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.backend.arn
+  }
+} 
