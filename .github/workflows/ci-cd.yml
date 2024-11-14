@@ -92,7 +92,7 @@ jobs:
         env:
           TF_VAR_openai_api_key: ${{ secrets.OPENAI_API_KEY }}
           TF_VAR_crewai_api_key: ${{ secrets.CREWAI_API_KEY }}
-        run: terraform plan
+        run: terraform plan -lock=false
 
       - name: Terraform Apply
         working-directory: ./terraform
@@ -100,12 +100,6 @@ jobs:
           TF_VAR_openai_api_key: ${{ secrets.OPENAI_API_KEY }}
           TF_VAR_crewai_api_key: ${{ secrets.CREWAI_API_KEY }}
         run: terraform apply -auto-approve
-
-      # Add a step to unlock Terraform state if needed
-      - name: Unlock Terraform state
-        if: failure()
-        working-directory: ./terraform
-        run: terraform force-unlock <LOCK_ID>
 
       # Build and push Docker images to ECR
       - name: Log in to Amazon ECR
