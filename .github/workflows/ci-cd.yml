@@ -101,6 +101,12 @@ jobs:
           TF_VAR_crewai_api_key: ${{ secrets.CREWAI_API_KEY }}
         run: terraform apply -auto-approve
 
+      # Add a step to unlock Terraform state if needed
+      - name: Unlock Terraform state
+        if: failure()
+        working-directory: ./terraform
+        run: terraform force-unlock <LOCK_ID>
+
       # Build and push Docker images to ECR
       - name: Log in to Amazon ECR
         id: login-ecr
