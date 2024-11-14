@@ -111,19 +111,25 @@ jobs:
         id: terraform-output
         working-directory: ./terraform
         run: |
-          # Debugging: Capture and print the raw output
-          terraform output -raw frontend_ecr_repository_url || echo "Error capturing frontend_ecr_repository_url"
-          terraform output -raw backend_ecr_repository_url || echo "Error capturing backend_ecr_repository_url"
-          terraform output -raw ecs_cluster_name || echo "Error capturing ecs_cluster_name"
-          terraform output -raw frontend_service_name || echo "Error capturing frontend_service_name"
-          terraform output -raw backend_service_name || echo "Error capturing backend_service_name"
+          # Capture and print the raw output with error handling
+          FRONTEND_ECR_URL=$(terraform output -raw frontend_ecr_repository_url 2>/dev/null || echo "Error capturing frontend_ecr_repository_url")
+          BACKEND_ECR_URL=$(terraform output -raw backend_ecr_repository_url 2>/dev/null || echo "Error capturing backend_ecr_repository_url")
+          ECS_CLUSTER_NAME=$(terraform output -raw ecs_cluster_name 2>/dev/null || echo "Error capturing ecs_cluster_name")
+          FRONTEND_SERVICE_NAME=$(terraform output -raw frontend_service_name 2>/dev/null || echo "Error capturing frontend_service_name")
+          BACKEND_SERVICE_NAME=$(terraform output -raw backend_service_name 2>/dev/null || echo "Error capturing backend_service_name")
 
-          # Original commands
-          echo "frontend_ecr_repository_url=$(terraform output -raw frontend_ecr_repository_url)" >> $GITHUB_OUTPUT
-          echo "backend_ecr_repository_url=$(terraform output -raw backend_ecr_repository_url)" >> $GITHUB_OUTPUT
-          echo "ecs_cluster_name=$(terraform output -raw ecs_cluster_name)" >> $GITHUB_OUTPUT
-          echo "frontend_service_name=$(terraform output -raw frontend_service_name)" >> $GITHUB_OUTPUT
-          echo "backend_service_name=$(terraform output -raw backend_service_name)" >> $GITHUB_OUTPUT
+          # Ensure no errors are written to the output
+          if [[ $FRONTEND_ECR_URL == Error* || $BACKEND_ECR_URL == Error* || $ECS_CLUSTER_NAME == Error* || $FRONTEND_SERVICE_NAME == Error* || $BACKEND_SERVICE_NAME == Error* ]]; then
+            echo "Error: One or more Terraform outputs could not be captured."
+            exit 1
+          fi
+
+          # Write outputs to GitHub Actions output
+          echo "frontend_ecr_repository_url=$FRONTEND_ECR_URL" >> $GITHUB_OUTPUT
+          echo "backend_ecr_repository_url=$BACKEND_ECR_URL" >> $GITHUB_OUTPUT
+          echo "ecs_cluster_name=$ECS_CLUSTER_NAME" >> $GITHUB_OUTPUT
+          echo "frontend_service_name=$FRONTEND_SERVICE_NAME" >> $GITHUB_OUTPUT
+          echo "backend_service_name=$BACKEND_SERVICE_NAME" >> $GITHUB_OUTPUT
 
       # Update ECS services using the captured outputs
       - name: Update ECS services
