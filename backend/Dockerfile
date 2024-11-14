@@ -16,5 +16,6 @@ RUN uv sync --frozen
 # Copy the project files into the image
 ADD api/ /app/api/
 ADD backend/ /app/backend/
+ADD manage.py /app/
 
 CMD ["uv", "run", "python", "manage.py", "runserver", "0.0.0.0:8000"]
