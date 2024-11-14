@@ -6,11 +6,15 @@ COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 #    python3-dev \
 #    build-essential
 
-# Copy the project into the image
-ADD . /app
-
-# Sync the project into a new environment, using the frozen lockfile
+# Copy the install dependencies and install
+ADD pyproject.toml /app/
+ADD .python-version /app/
+ADD uv.lock /app/
 WORKDIR /app
 RUN uv sync --frozen
+
+# Copy the project files into the image
+ADD api/ /app/api/
+ADD backend/ /app/backend/
 
 CMD ["uv", "run", "python", "manage.py", "runserver", "0.0.0.0:8000"]
