@@ -89,6 +89,9 @@ jobs:
 
       - name: Terraform Plan
         working-directory: ./terraform
+        env:
+          TF_VAR_openai_api_key: ${{ secrets.OPENAI_API_KEY }}
+          TF_VAR_crewai_api_key: ${{ secrets.CREWAI_API_KEY }}
         run: terraform plan
 
       - name: Terraform Apply
