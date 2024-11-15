@@ -117,7 +117,7 @@ jobs:
         run: aws sts get-caller-identity
       
       - name: Print AWS Region
-        run: echo "AWS Region: ${{ secrets.AWS_DEFAULT_REGION }}"
+        run: echo ${{ secrets.AWS_DEFAULT_REGION }}
 
       # Update ECS services using hardcoded values
       - name: Update ECS services
