@@ -106,7 +106,7 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
-      # Add a step to capture terraform outputs
+      # Capture terraform outputs
       - name: Get Terraform outputs and update ECS services
         id: terraform-output
         working-directory: ./terraform
@@ -132,5 +132,12 @@ jobs:
             exit 1
           fi
 
-          aws ecs update-service --cluster $ECS_CLUSTER_NAME --service $FRONTEND_SERVICE_NAME --force-new-deployment
-          aws ecs update-service --cluster $ECS_CLUSTER_NAME --service $BACKEND_SERVICE_NAME --force-new-deployment
+          echo "ecs_cluster_name=$ECS_CLUSTER_NAME" >> $GITHUB_ENV
+          echo "frontend_service_name=$FRONTEND_SERVICE_NAME" >> $GITHUB_ENV
+          echo "backend_service_name=$BACKEND_SERVICE_NAME" >> $GITHUB_ENV
+
+      # Update ECS services using the captured outputs
+      - name: Update ECS services
+        run: |
+          aws ecs update-service --cluster ${{ steps.terraform-output.outputs.ecs_cluster_name }} --service ${{ steps.terraform-output.outputs.frontend_service_name }} --force-new-deployment
+          aws ecs update-service --cluster ${{ steps.terraform-output.outputs.ecs_cluster_name }} --service ${{ steps.terraform-output.outputs.backend_service_name }} --force-new-deployment
