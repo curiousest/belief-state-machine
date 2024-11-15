@@ -107,14 +107,24 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v1
 
       # Add a step to capture terraform outputs
-      - name: Get Terraform outputs
+      - name: Get Terraform outputs and update ECS services
         id: terraform-output
         working-directory: ./terraform
         run: |
-          # Capture and print the raw output with error handling
-          ECS_CLUSTER_NAME=$(terraform output -raw ecs_cluster_name 2>/dev/null || echo "Error capturing ecs_cluster_name")
-          FRONTEND_SERVICE_NAME=$(terraform output -raw frontend_service_name 2>/dev/null || echo "Error capturing frontend_service_name")
-          BACKEND_SERVICE_NAME=$(terraform output -raw backend_service_name 2>/dev/null || echo "Error capturing backend_service_name")
+          # Function to extract the actual output value
+          extract_value() {
+            echo "$1" | grep -oP '(?<=stdout: ).*(?= ::debug::)'
+          }
+
+          # Capture the raw output and extract the actual value
+          RAW_ECS_CLUSTER_NAME=$(terraform output -raw ecs_cluster_name 2>/dev/null || echo "Error capturing ecs_cluster_name")
+          ECS_CLUSTER_NAME=$(extract_value "$RAW_ECS_CLUSTER_NAME")
+
+          RAW_FRONTEND_SERVICE_NAME=$(terraform output -raw frontend_service_name 2>/dev/null || echo "Error capturing frontend_service_name")
+          FRONTEND_SERVICE_NAME=$(extract_value "$RAW_FRONTEND_SERVICE_NAME")
+
+          RAW_BACKEND_SERVICE_NAME=$(terraform output -raw backend_service_name 2>/dev/null || echo "Error capturing backend_service_name")
+          BACKEND_SERVICE_NAME=$(extract_value "$RAW_BACKEND_SERVICE_NAME")
 
           # Ensure no errors are written to the output
           if [[ $ECS_CLUSTER_NAME == Error* || $FRONTEND_SERVICE_NAME == Error* || $BACKEND_SERVICE_NAME == Error* ]]; then
@@ -122,17 +132,5 @@ jobs:
             exit 1
           fi
 
-          echo $ECS_CLUSTER_NAME
-          echo $FRONTEND_SERVICE_NAME
-          echo $BACKEND_SERVICE_NAME
-
-          # Write outputs to GitHub Actions output
-          echo "ecs_cluster_name=$ECS_CLUSTER_NAME" >> $GITHUB_OUTPUT
-          echo "frontend_service_name=$FRONTEND_SERVICE_NAME" >> $GITHUB_OUTPUT
-          echo "backend_service_name=$BACKEND_SERVICE_NAME" >> $GITHUB_OUTPUT
-
-      # Update ECS services using the captured outputs
-      - name: Update ECS services
-        run: |
-          aws ecs update-service --cluster ${{ steps.terraform-output.outputs.ecs_cluster_name }} --service ${{ steps.terraform-output.outputs.frontend_service_name }} --force-new-deployment
-          aws ecs update-service --cluster ${{ steps.terraform-output.outputs.ecs_cluster_name }} --service ${{ steps.terraform-output.outputs.backend_service_name }} --force-new-deployment
+          aws ecs update-service --cluster $ECS_CLUSTER_NAME --service $FRONTEND_SERVICE_NAME --force-new-deployment
+          aws ecs update-service --cluster $ECS_CLUSTER_NAME --service $BACKEND_SERVICE_NAME --force-new-deployment
