@@ -107,24 +107,35 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v1
 
       # Capture terraform outputs
-      - name: Get Terraform outputs and update ECS services
+      - name: Get Terraform outputs
         id: terraform-output
         working-directory: ./terraform
         run: |
-          # Function to extract the actual output value
+          set -x  # Enable shell debugging
+
+          # Capture the raw output and print it for debugging
+          RAW_ECS_CLUSTER_NAME=$(terraform output -raw ecs_cluster_name 2>/dev/null || echo "Error capturing ecs_cluster_name")
+          echo "RAW_ECS_CLUSTER_NAME: $RAW_ECS_CLUSTER_NAME"
+
+          RAW_FRONTEND_SERVICE_NAME=$(terraform output -raw frontend_service_name 2>/dev/null || echo "Error capturing frontend_service_name")
+          echo "RAW_FRONTEND_SERVICE_NAME: $RAW_FRONTEND_SERVICE_NAME"
+
+          RAW_BACKEND_SERVICE_NAME=$(terraform output -raw backend_service_name 2>/dev/null || echo "Error capturing backend_service_name")
+          echo "RAW_BACKEND_SERVICE_NAME: $RAW_BACKEND_SERVICE_NAME"
+
+          # Extract and print the actual values
           extract_value() {
             echo "$1" | grep -oP '(?<=stdout: ).*(?= ::debug::)'
           }
 
-          # Capture the raw output and extract the actual value
-          RAW_ECS_CLUSTER_NAME=$(terraform output -raw ecs_cluster_name 2>/dev/null || echo "Error capturing ecs_cluster_name")
           ECS_CLUSTER_NAME=$(extract_value "$RAW_ECS_CLUSTER_NAME")
+          echo "ECS_CLUSTER_NAME: $ECS_CLUSTER_NAME"
 
-          RAW_FRONTEND_SERVICE_NAME=$(terraform output -raw frontend_service_name 2>/dev/null || echo "Error capturing frontend_service_name")
           FRONTEND_SERVICE_NAME=$(extract_value "$RAW_FRONTEND_SERVICE_NAME")
+          echo "FRONTEND_SERVICE_NAME: $FRONTEND_SERVICE_NAME"
 
-          RAW_BACKEND_SERVICE_NAME=$(terraform output -raw backend_service_name 2>/dev/null || echo "Error capturing backend_service_name")
           BACKEND_SERVICE_NAME=$(extract_value "$RAW_BACKEND_SERVICE_NAME")
+          echo "BACKEND_SERVICE_NAME: $BACKEND_SERVICE_NAME"
 
           # Ensure no errors are written to the output
           if [[ $ECS_CLUSTER_NAME == Error* || $FRONTEND_SERVICE_NAME == Error* || $BACKEND_SERVICE_NAME == Error* ]]; then
@@ -132,6 +143,18 @@ jobs:
             exit 1
           fi
 
+          # Write outputs to a temporary file
+          echo "ECS_CLUSTER_NAME=$ECS_CLUSTER_NAME" >> terraform_outputs.txt
+          echo "FRONTEND_SERVICE_NAME=$FRONTEND_SERVICE_NAME" >> terraform_outputs.txt
+          echo "BACKEND_SERVICE_NAME=$BACKEND_SERVICE_NAME" >> terraform_outputs.txt
+
+      - name: Load Terraform outputs
+        id: load-terraform-outputs
+        run: |
+          set -x  # Enable shell debugging
+
+          # Source the temporary file to load the outputs into the environment
+          source terraform_outputs.txt
           echo "ecs_cluster_name=$ECS_CLUSTER_NAME" >> $GITHUB_ENV
           echo "frontend_service_name=$FRONTEND_SERVICE_NAME" >> $GITHUB_ENV
           echo "backend_service_name=$BACKEND_SERVICE_NAME" >> $GITHUB_ENV
