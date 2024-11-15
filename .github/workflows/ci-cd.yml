@@ -106,6 +106,10 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
+      # List ECS Clusters for debugging
+      - name: List ECS Clusters
+        run: aws ecs list-clusters
+
       # Update ECS services using hardcoded values
       - name: Update ECS services
         run: |
