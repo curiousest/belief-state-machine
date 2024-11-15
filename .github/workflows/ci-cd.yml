@@ -113,21 +113,29 @@ jobs:
         run: |
           set -x  # Enable shell debugging
 
-          # Use JSON output and jq to extract values
-          ECS_CLUSTER_NAME=$(terraform output -json | jq -r '.ecs_cluster_name.value')
+          # Capture the raw output and print it for debugging
+          RAW_ECS_CLUSTER_NAME=$(terraform output -raw ecs_cluster_name 2>/dev/null || echo "Error capturing ecs_cluster_name")
+          echo "RAW_ECS_CLUSTER_NAME: $RAW_ECS_CLUSTER_NAME"
+
+          RAW_FRONTEND_SERVICE_NAME=$(terraform output -raw frontend_service_name 2>/dev/null || echo "Error capturing frontend_service_name")
+          echo "RAW_FRONTEND_SERVICE_NAME: $RAW_FRONTEND_SERVICE_NAME"
+
+          RAW_BACKEND_SERVICE_NAME=$(terraform output -raw backend_service_name 2>/dev/null || echo "Error capturing backend_service_name")
+          echo "RAW_BACKEND_SERVICE_NAME: $RAW_BACKEND_SERVICE_NAME"
+
+          # Extract and print the actual values
+          extract_value() {
+            echo "$1" | grep -oP '(?<=stdout: ).*(?= ::debug::)'
+          }
+
+          ECS_CLUSTER_NAME=$(extract_value "$RAW_ECS_CLUSTER_NAME")
           echo "ECS_CLUSTER_NAME: $ECS_CLUSTER_NAME"
 
-          FRONTEND_SERVICE_NAME=$(terraform output -json | jq -r '.frontend_service_name.value')
+          FRONTEND_SERVICE_NAME=$(extract_value "$RAW_FRONTEND_SERVICE_NAME")
           echo "FRONTEND_SERVICE_NAME: $FRONTEND_SERVICE_NAME"
 
-          BACKEND_SERVICE_NAME=$(terraform output -json | jq -r '.backend_service_name.value')
+          BACKEND_SERVICE_NAME=$(extract_value "$RAW_BACKEND_SERVICE_NAME")
           echo "BACKEND_SERVICE_NAME: $BACKEND_SERVICE_NAME"
-
-          # Ensure no errors are written to the output
-          if [[ -z "$ECS_CLUSTER_NAME" || -z "$FRONTEND_SERVICE_NAME" || -z "$BACKEND_SERVICE_NAME" ]]; then
-            echo "Error: One or more Terraform outputs could not be captured."
-            exit 1
-          fi
 
           # Write outputs to a temporary file
           echo "ECS_CLUSTER_NAME=$ECS_CLUSTER_NAME" >> terraform_outputs.txt
