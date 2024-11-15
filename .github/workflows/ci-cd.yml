@@ -122,6 +122,10 @@ jobs:
             exit 1
           fi
 
+          echo $ECS_CLUSTER_NAME
+          echo $FRONTEND_SERVICE_NAME
+          echo $BACKEND_SERVICE_NAME
+
           # Write outputs to GitHub Actions output
           echo "ecs_cluster_name=$ECS_CLUSTER_NAME" >> $GITHUB_OUTPUT
           echo "frontend_service_name=$FRONTEND_SERVICE_NAME" >> $GITHUB_OUTPUT
