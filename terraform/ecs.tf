@@ -136,10 +136,10 @@ resource "aws_ecs_service" "backend" {
 
 resource "aws_cloudwatch_log_group" "frontend" {
   name              = "/ecs/${var.project_name}-frontend"
-  retention_in_days = 2
+  retention_in_days = 1
 }
 
 resource "aws_cloudwatch_log_group" "backend" {
   name              = "/ecs/${var.project_name}-backend"
-  retention_in_days = 2
+  retention_in_days = 1
 }
