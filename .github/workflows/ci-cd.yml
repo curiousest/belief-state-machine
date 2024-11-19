@@ -32,9 +32,12 @@ jobs:
         id: build_backend
         run: |
           BACKEND_IMAGE=${{ steps.login-ecr.outputs.registry }}/${{ secrets.BACKEND_ECR_REPOSITORY }}:${{ github.sha }}
+          LATEST_BACKEND_IMAGE=${{ steps.login-ecr.outputs.registry }}/${{ secrets.BACKEND_ECR_REPOSITORY }}:latest
           echo "BACKEND_IMAGE=$BACKEND_IMAGE" >> $GITHUB_ENV
+          echo "LATEST_BACKEND_IMAGE=$LATEST_BACKEND_IMAGE" >> $GITHUB_ENV
           cd backend
           docker build -t $BACKEND_IMAGE .
+          docker tag $BACKEND_IMAGE $LATEST_BACKEND_IMAGE
 
       - name: Run backend tests
         run: |
@@ -55,6 +58,7 @@ jobs:
       - name: Push Backend Docker Image
         run: |
           docker push ${{ env.BACKEND_IMAGE }}
+          docker push ${{ env.LATEST_BACKEND_IMAGE }}
 
       - name: Push Frontend Docker Image
         run: |
