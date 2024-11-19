@@ -54,3 +54,6 @@ help:
 	@echo "  make run-all       - Run both backend and frontend servers"
 	@echo "  make setup         - Install dependencies for both backend and frontend"
 	@echo "  make help          - Show this help message"
+	@echo "  make local-github-actions - Run GitHub Actions locally"
+	@echo "  make scale-up        - Scale up the ECS cluster"
+	@echo "  make scale-down      - Scale down the ECS cluster"
