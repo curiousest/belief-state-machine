@@ -47,9 +47,12 @@ jobs:
         id: build_frontend
         run: |
           FRONTEND_IMAGE=${{ steps.login-ecr.outputs.registry }}/${{ secrets.FRONTEND_ECR_REPOSITORY }}:${{ github.sha }}
+          LATEST_FRONTEND_IMAGE=${{ steps.login-ecr.outputs.registry }}/${{ secrets.FRONTEND_ECR_REPOSITORY }}:latest
           echo "FRONTEND_IMAGE=$FRONTEND_IMAGE" >> $GITHUB_ENV
+          echo "LATEST_FRONTEND_IMAGE=$LATEST_FRONTEND_IMAGE" >> $GITHUB_ENV
           cd frontend
           docker build -t $FRONTEND_IMAGE .
+          docker tag $FRONTEND_IMAGE $LATEST_FRONTEND_IMAGE
 
       - name: Run frontend tests
         run: |
@@ -63,6 +66,7 @@ jobs:
       - name: Push Frontend Docker Image
         run: |
           docker push ${{ env.FRONTEND_IMAGE }}
+          docker push ${{ env.LATEST_FRONTEND_IMAGE }}
 
   deploy:
     needs: [build]
