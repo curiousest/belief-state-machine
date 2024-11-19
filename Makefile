@@ -39,6 +39,10 @@ setup:
 	cd $(BACKEND_DIR) && poetry install
 	cd $(FRONTEND_DIR) && npm install
 
+.PHONY: local-github-actions
+local-github-actions:
+	act --secret-file .env
+
 # Help command
 .PHONY: help
 help:

@@ -115,18 +115,13 @@ jobs:
 
       # List ECS Clusters for debugging
       - name: List ECS Clusters
-        run: |
-          aws ecs list-clusters --region ${{ secrets.AWS_REGION }}
-          aws ecs list-clusters --region ${{ secrets.AWS_DEFAULT_REGION }}
+        run: aws ecs list-clusters --region ${{ secrets.AWS_DEFAULT_REGION }}
 
       - name: Verify AWS CLI Version
         run: aws --version
    
       - name: Verify AWS Identity
         run: aws sts get-caller-identity
-      
-      - name: Print AWS Region
-        run: echo ${{ secrets.AWS_DEFAULT_REGION }}
 
       # Update ECS services using hardcoded values
       - name: Update ECS services
