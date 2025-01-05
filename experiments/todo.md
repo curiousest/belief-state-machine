@@ -2,6 +2,26 @@
 
 https://github.com/openai/evals
 
+### recognition
+
+given a prompt and a looong list of generated text, which ones should be selected?
+"in our experience about 5-15% of text is good enough to include"
+label the overall text 0-10
+pick the text from it to include
+
+### recall 1
+
+given a bunch of different models at different temperatures, generate a lot of text
+randomize the order of the text
+see which ones are selected by the model
+see which ones are labelled by human as good/bad
+
+similarity/distance metric between the model's output to one of the target texts labelled as good
+
+### recall 2
+
+prompt + text => similarity/distance metric to the target text
+
 ## debug why the parables suck
 1. Try other files/context to see if it's the input
 2. Compare against manual text entry to see if it's the api/model

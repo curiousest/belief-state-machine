@@ -10,6 +10,8 @@ crewai = { extras = ["tools"], version = ">=0.75" }
 crewai-tools = ">=0.13"
 jupyterlab = "^4.2.5"
 weave = "^0.51.17"
+ipywidgets = "^8.1.5"
+anthropic = "^0.40.0"
 
 [tool.poetry.scripts]
 system_1 = "system_1.main:run"

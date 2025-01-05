@@ -163,3 +163,9 @@ cython_debug/
 
 terraform/terraform.tfvars
 .terraform/
+
+experiments/evals/source_prompts/
+experiments/evals/temp/
+experiments/evals/labels/
+experiments/evals/finetuning_data/
+experiments/evals/generated_text/

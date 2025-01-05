@@ -1,0 +1,5 @@
+QoGD/summary_old.txt
+ft:gpt-4o-mini-2024-07-18:personal::AjpfGlFg
+
+QoGD/summary_act1.txt
+ft:gpt-4o-2024-08-06:personal::AljQyJtB
