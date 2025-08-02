@@ -1,22 +1,39 @@
-[tool.poetry]
+[project]
 name = "bsm_experiments"
 version = "0.1.0"
 description = "bsm experiments using crewAI"
-authors = ["Your Name <you@example.com>"]
+dependencies = [
+    "anthropic>=0.45.2",
+    "ipywidgets>=8.1.5",
+    "jupyterlab>=4.3.5",
+    "openai>=1.61.0",
+    "pandas>=2.2.3",
+    "pillow>=11.1.0",
+    "pyarrow>=19.0.0",
+    "tiktoken>=0.9.0",
+]
 
-[tool.poetry.dependencies]
-python = ">=3.12,<=3.13"
-crewai = { extras = ["tools"], version = ">=0.75" }
-crewai-tools = ">=0.13"
-jupyterlab = "^4.2.5"
-weave = "^0.51.17"
-ipywidgets = "^8.1.5"
-anthropic = "^0.40.0"
+[tool.pdm.build]
+includes = []
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
 
-[tool.poetry.scripts]
+requires-python = ">=3.12"
+dependencies = [
+    "crewai[tools]>=0.75",
+    "crewai-tools>=0.13",
+    "jupyterlab<5.0.0,>=4.2.5",
+    "weave<1.0.0,>=0.51.17",
+    "ipywidgets<9.0.0,>=8.1.5",
+    "anthropic<1.0.0,>=0.40.0",
+    "torch>=2.6.0",
+    "torchvision>=0.21.0",
+]
+name = "bsm_experiments"
+version = "0.1.0"
+description = "bsm experiments using crewAI"
+
+[project.scripts]
 system_1 = "system_1.main:run"
 train = "system_1.main:train"
-
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"

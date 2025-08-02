@@ -2,6 +2,7 @@
 __pycache__/
 *.py[cod]
 *$py.class
+*.DS_STORE
 
 # C extensions
 *.so
@@ -169,3 +170,9 @@ experiments/evals/temp/
 experiments/evals/labels/
 experiments/evals/finetuning_data/
 experiments/evals/generated_text/
+experiments/evals/deepdream_output/
+experiments/evals/filtered_text/
+experiments/editing/experiments
+experiments/editing/outputs
+
+
