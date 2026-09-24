@@ -176,3 +176,6 @@ experiments/editing/experiments
 experiments/editing/outputs
 
 
+
+# dependencies
+node_modules/

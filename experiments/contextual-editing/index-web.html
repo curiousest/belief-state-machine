@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Manuscript Editor - Web Test</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div id="app">
+      <div class="app-container">
+        <header class="toolbar">
+          <div class="toolbar-left">
+            <button id="openFile" class="btn">Open File</button>
+            <button id="saveFile" class="btn">Save</button>
+            <button id="openContext" class="btn">Story Context</button>
+            <button id="generateContext" class="btn btn-primary">Generate Context</button>
+          </div>
+          <div class="toolbar-right">
+            <button id="themeToggle" class="btn">🌙</button>
+            <button id="settings" class="btn">⚙️</button>
+          </div>
+        </header>
+        
+        <main class="main-content">
+          <div class="editor-panel">
+            <div id="editor-container"></div>
+          </div>
+          
+          <div class="feedback-panel">
+            <div class="feedback-header">
+              <h3>AI Feedback</h3>
+              <button id="clearFeedback" class="btn-small">Clear All</button>
+            </div>
+            <div id="feedback-list" class="feedback-list"></div>
+          </div>
+        </main>
+      </div>
+      
+      <!-- Context Modal -->
+      <div id="contextModal" class="modal">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3>Story Context</h3>
+            <button id="closeContext" class="btn-close">×</button>
+          </div>
+          <div class="modal-body">
+            <textarea id="contextEditor" placeholder="Enter your story's global context, character arcs, tone, etc..."></textarea>
+            <div class="modal-actions">
+              <button id="saveContext" class="btn">Save Context</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Generate Context Modal -->
+      <div id="generateContextModal" class="modal">
+        <div class="modal-content large-modal">
+          <div class="modal-header">
+            <h3>Generate Story Context</h3>
+            <button id="closeGenerateContext" class="btn-close">×</button>
+          </div>
+          <div class="modal-body">
+            <div class="generate-context-intro">
+              <p>Paste your complete manuscript below. AI will analyze it and create a comprehensive story context that will be used for all future feedback.</p>
+            </div>
+            <div class="generate-context-input">
+              <label for="manuscriptInput">Full Manuscript:</label>
+              <textarea id="manuscriptInput" placeholder="Paste your complete manuscript here..."></textarea>
+            </div>
+            <div class="generate-context-output" style="display: none;">
+              <label for="generatedContext">Generated Story Context:</label>
+              <textarea id="generatedContext" readonly></textarea>
+              <div class="context-actions">
+                <button id="acceptContext" class="btn btn-primary">Accept & Save as Story Context</button>
+                <button id="editContext" class="btn">Edit Before Saving</button>
+              </div>
+            </div>
+            <div class="modal-actions">
+              <button id="generateContextBtn" class="btn btn-primary">
+                <span class="btn-text">Generate Story Context</span>
+                <span class="btn-loading" style="display: none;">Generating...</span>
+              </button>
+              <button id="cancelGenerate" class="btn">Cancel</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Settings Modal -->
+      <div id="settingsModal" class="modal">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3>Settings</h3>
+            <button id="closeSettings" class="btn-close">×</button>
+          </div>
+          <div class="modal-body">
+            <div class="setting-group">
+              <label for="apiKey">OpenAI API Key:</label>
+              <input type="password" id="apiKey" placeholder="sk-..." />
+            </div>
+            <div class="setting-group">
+              <label for="contextPath">Context File Path:</label>
+              <input type="text" id="contextPath" placeholder="story_context.md" />
+            </div>
+            <div class="modal-actions">
+              <button id="saveSettings" class="btn">Save Settings</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <script type="module" src="/src/main-web.js"></script>
+  </body>
+</html>

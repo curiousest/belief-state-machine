@@ -1,0 +1,29 @@
+# Core dependencies for literary analysis tool
+# Generated from pyproject.toml for compatibility
+
+# AI Providers
+openai>=1.0.0
+anthropic>=0.25.0
+google-generativeai>=0.7.0
+
+# Text processing
+tiktoken>=0.5.0
+
+# Environment management
+python-dotenv>=1.0.0
+
+# Development dependencies (optional)
+# Uncomment the following lines for development:
+# pytest>=7.0.0
+# pytest-cov>=4.0.0
+# ruff>=0.1.0
+# black>=23.0.0
+# mypy>=1.0.0
+
+# Jupyter dependencies (optional) 
+# Uncomment the following lines for notebook support:
+# jupyter>=1.0.0
+# ipykernel>=6.0.0
+# ipywidgets>=8.0.0
+# matplotlib>=3.5.0
+# pandas>=1.5.0
